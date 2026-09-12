@@ -3,15 +3,13 @@
   "arrows": [],
   "wards": [],
   "app": "wild-rift-map-planner",
-  "savedAt": "2026-09-07T02:27:25.267Z",
+  "savedAt": "2026-09-12T20:18:06.612Z",
   "cam": {
     "x": 0,
     "y": 0,
     "zoom": 1
   },
-  "structGray": [
-    "BMID-T1"
-  ],
+  "structGray": [],
   "tokens": [
     {
       "name": "fiora",
