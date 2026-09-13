@@ -1,16 +1,16 @@
-/* Wild Rift Map Planner — só champions, vanilla JS */
+/* Wild Rift Map Planner — champions only, vanilla JS */
 const $ = (sel) => document.querySelector(sel);
 const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
 const uid = () => `t${Date.now().toString(36)}${Math.floor(Math.random() * 999)}`;
 
 const state = {
   cam: { x: 0, y: 0, zoom: 1 },
-  tokens: [], // {id, src, name, team, x, y, grayscale} — sempre 10
+  tokens: [], // {id, src, name, team, x, y, grayscale} — always 10
   arrows: [],
   wards: [],
   labels: [], // {id, tokenId, text}
   selected: null, // {id}
-  structGray: {}, // structId -> true (P&B + X)
+  structGray: {}, // structId -> true (B&W + X)
 };
 
 const MAX_TOKENS = 10;
@@ -21,14 +21,14 @@ const world = $("#world");
 const layerStructs = $("#layer-structs");
 const layerTokens = $("#layer-tokens");
 
-/* ---------- ferramentas do mapa ---------- */
+/* ---------- map tools ---------- */
 let activeTool = null;
 let arrowStart = null;
 let arrowPreview = null;
 const toolHints = {
-  arrow: "Clique em um personagem ou na ponta de uma seta. Esc para sair.",
-  ward: "Clique no mapa para colocar uma ward. Esc para sair.",
-  text: "Clique num personagem para vincular um texto. Esc para sair.",
+  arrow: "Click a character or an arrow tip. Press Esc to exit.",
+  ward: "Click the map to place a ward. Press Esc to exit.",
+  text: "Click a character to attach a text. Press Esc to exit.",
 };
 function selectTool(tool) {
   activeTool = tool;
@@ -88,7 +88,7 @@ function renderAnnotations() {
     el.className = "ward";
     el.style.left = `${ward.x}%`;
     el.style.top = `${ward.y}%`;
-    el.title = "Ward — duplo-clique p/ remover";
+    el.title = "Ward — double-click to remove";
     const img = document.createElement("img");
     img.decoding = "async"; img.alt = "Ward"; img.draggable = false;
     withImgFallback(img, WARD_SRC); img.src = WARD_SRC;
@@ -107,7 +107,7 @@ function renderLabels() {
   const box = $("#layer-labels");
   if (!box) return;
   box.replaceChildren();
-  // Agrupa por champion p/ empilhar múltiplas caixas
+  // Group by champion to stack multiple boxes
   const byToken = {};
   state.labels.forEach((lb) => {
     (byToken[lb.tokenId] = byToken[lb.tokenId] || []).push(lb);
@@ -119,21 +119,21 @@ function renderLabels() {
       const el = document.createElement("div");
       el.className = "map-label";
       el.dataset.id = lb.id;
-      // Leve sobreposição na base do token
+      // Slight overlap at the token base
       el.style.left = `${tk.x}%`;
       el.style.top = `${tk.y + 2.2 + i * 2.5}%`;
       const input = document.createElement("input");
       input.value = lb.text || "";
-      input.placeholder = "Texto...";
+      input.placeholder = "Text...";
       input.maxLength = 60;
-      input.setAttribute("aria-label", "Texto do champion");
+      input.setAttribute("aria-label", "Champion text");
       input.addEventListener("input", () => { lb.text = input.value; });
       input.addEventListener("pointerdown", (e) => e.stopPropagation());
       input.addEventListener("click", (e) => e.stopPropagation());
       input.addEventListener("dblclick", (e) => e.stopPropagation());
       const close = document.createElement("button");
       close.className = "label-close";
-      close.title = "Remover texto";
+      close.title = "Remove text";
       close.innerHTML = "×";
       close.onclick = (e) => {
         e.stopPropagation();
@@ -141,7 +141,7 @@ function renderLabels() {
         renderLabels();
       };
       el.append(input, close);
-      // Evita que clique na caixa dispare ferramentas do mapa
+      // Prevent clicks on the box from triggering map tools
       el.addEventListener("pointerdown", (e) => e.stopPropagation());
       el.addEventListener("click", (e) => e.stopPropagation());
       el.addEventListener("dblclick", (e) => e.stopPropagation());
@@ -158,14 +158,14 @@ world.addEventListener("pointerdown", (e) => {
   if (activeTool) { e.stopPropagation(); e.preventDefault(); }
 }, true);
 world.addEventListener("dblclick", (e) => {
-  if (e.target.closest && e.target.closest(".ward")) return; // deixa o handler da ward remover
-  if (e.target.closest && e.target.closest(".arrow-group")) return; // deixa o handler da seta remover
+  if (e.target.closest && e.target.closest(".ward")) return; // let the ward handler remove it
+  if (e.target.closest && e.target.closest(".arrow-group")) return; // let the arrow handler remove it
   if (activeTool) { e.stopPropagation(); e.preventDefault(); }
 }, true);
 world.addEventListener("click", (e) => {
   if (!activeTool || e.button !== 0) return;
-  if (e.target.closest && e.target.closest(".ward")) { e.stopPropagation(); return; } // duplo-clique p/ excluir não cria wards
-  if (e.target.closest && e.target.closest(".map-label")) { e.stopPropagation(); return; } // clique na caixa não cria nada
+  if (e.target.closest && e.target.closest(".ward")) { e.stopPropagation(); return; } // double-click to delete doesn't create wards
+  if (e.target.closest && e.target.closest(".map-label")) { e.stopPropagation(); return; } // clicking the box creates nothing
   e.stopPropagation();
   const point = mapPoint(e);
   if (activeTool === "ward") state.wards.push(point);
@@ -175,14 +175,14 @@ world.addEventListener("click", (e) => {
     if (!token) { selectTool(null); return; }
     state.labels.push({ id: uid(), tokenId: token.id, text: "" });
     renderLabels();
-    // Foca o input recém-criado direto no canvas
+    // Focus the newly created input right on the canvas
     const box = $("#layer-labels");
     const last = box ? box.lastElementChild?.querySelector("input") : null;
     if (last) { last.focus(); last.select(); }
     return;
   }
   else if (!arrowStart) {
-    // A tolerância em pixels mantém a ponta fácil de selecionar em qualquer zoom.
+    // Pixel tolerance keeps the tip easy to select at any zoom.
     const rect = world.getBoundingClientRect();
     let nearest = null, distance = 14;
     state.arrows.forEach((arrow) => {
@@ -195,7 +195,7 @@ world.addEventListener("click", (e) => {
     if (!start) { selectTool(null); return; }
     arrowStart = { x: start.x, y: start.y, team: start.team || "neutral" };
     arrowPreview = arrowStart;
-    $("#tool-hint").textContent = "Mova o mouse e clique no destino. Esc cancela.";
+    $("#tool-hint").textContent = "Move the mouse and click the destination. Esc cancels.";
   }
   else {
     if (Math.hypot(point.x - arrowStart.x, point.y - arrowStart.y) < 0.1) return;
@@ -235,7 +235,7 @@ const setZoom = (z) => {
   applyCam();
 };
 
-/* Pan do canvas: só quando zoom > 100%. Em 100% (ou menos) desativa e recentraliza. */
+/* Pan the canvas: only when zoom > 100%. At 100% (or less) it disables and recenters. */
 let panMoved = false;
 function startCanvasPan(e) {
   if (state.cam.zoom <= 1) return;
@@ -260,7 +260,7 @@ function startCanvasPan(e) {
     document.removeEventListener("pointermove", move);
     document.removeEventListener("pointerup", up);
     document.removeEventListener("pointercancel", up);
-    // consome o click seguinte se houve arrasto (evita desselecionar à toa)
+    // swallow the next click if there was a drag (avoids accidental deselect)
     if (panMoved) {
       const swallow = (ev) => { ev.stopPropagation(); ev.preventDefault(); };
       viewport.addEventListener("click", swallow, true);
@@ -274,7 +274,7 @@ function startCanvasPan(e) {
 }
 viewport.addEventListener("pointerdown", startCanvasPan);
 
-/* ---------- seleção ---------- */
+/* ---------- selection ---------- */
 const setSelected = (id) => {
   state.selected = id ? { id } : null;
   document.querySelectorAll(".token.selected")
@@ -291,7 +291,7 @@ const setSelected = (id) => {
 
 const tokenById = (id) => state.tokens.find((t) => t.id === id);
 
-/* ---------- estruturas fixas (torres/nexus) ---------- */
+/* ---------- fixed structures (towers/nexus) ---------- */
 const toggleStruct = (id) => {
   if (state.structGray[id]) delete state.structGray[id];
   else state.structGray[id] = true;
@@ -304,7 +304,7 @@ function renderStructs() {
     const d = document.createElement("div");
     d.className = "structure kind-" + (s.kind || "tower") + (state.structGray[s.id] ? " grayscale" : "");
     d.dataset.id = s.id;
-    d.title = `${s.label} — duplo-clique p/ marcar`;
+    d.title = `${s.label} — double-click to mark`;
     d.style.left = `${s.x}%`;
     d.style.top = `${s.y}%`;
     const img = document.createElement("img");
@@ -322,7 +322,7 @@ function renderStructs() {
         d.append(clock);
       } else {
         const x = document.createElement("img");
-        x.className = "x-mark"; x.decoding = "async"; x.alt = "marcada";
+        x.className = "x-mark"; x.decoding = "async"; x.alt = "marked";
         if (typeof withImgFallback === "function") withImgFallback(x, X_MARK_SRC);
         x.src = X_MARK_SRC;
         x.draggable = false;
@@ -334,14 +334,14 @@ function renderStructs() {
   });
 }
 
-/* ---------- roster (trilhas 5v5, time pela posição) ---------- */
+/* ---------- roster (5v5 rails, team by position) ---------- */
 function renderRoster() {
   const blueRail = $("#team-blue");
   const redRail = $("#team-red");
   if (!blueRail || !redRail) return;
   blueRail.replaceChildren();
   redRail.replaceChildren();
-  // Ordem estável por índice: 0-4 azul (esquerda), 5-9 vermelho (direita)
+  // Stable order by index: 0-4 blue (left), 5-9 red (right)
   const ordered = [...state.tokens].slice(0, MAX_TOKENS);
   while (ordered.length < MAX_TOKENS) ordered.push(null);
   const makeCard = (tk) => {
@@ -354,7 +354,7 @@ function renderRoster() {
     const btn = document.createElement("div");
     btn.className = "team-card" + (tk.grayscale ? " is-gray" : "");
     if (state.selected && state.selected.id === tk.id) btn.classList.add("selected");
-    btn.title = `${tk.name.replace(/-/g, " ")} — clique p/ selecionar · duplo-clique p/ trocar`;
+    btn.title = `${tk.name.replace(/-/g, " ")} — click to select · double-click to swap`;
     btn.dataset.id = tk.id;
     const icon = document.createElement("img");
     icon.className = "team-icon";
@@ -367,12 +367,12 @@ function renderRoster() {
     btn.append(icon);
     return btn;
   };
-  // Índices 0-4 → azul (esquerda), 5-9 → vermelho (direita)
+  // Indexes 0-4 → blue (left), 5-9 → red (right)
   ordered.slice(0, 5).forEach((tk) => blueRail.append(makeCard(tk)));
   ordered.slice(5, 10).forEach((tk) => redRail.append(makeCard(tk)));
 }
 
-/* ---------- tokens (quadro fixo de 10) ---------- */
+/* ---------- tokens (fixed board of 10) ---------- */
 const addToken = ({ src, name, team = "blue", x = 50, y = 50 }) => {
   if (state.tokens.length >= MAX_TOKENS) return null;
   const tk = { id: uid(), src, name, team, x: clamp(x, 2, 98), y: clamp(y, 2, 98), grayscale: false };
@@ -407,7 +407,7 @@ function renderTokens() {
     d.className = "token" + (tk.grayscale ? " grayscale" : "");
     d.dataset.id = tk.id;
     d.dataset.team = tk.team;
-    d.title = `${tk.name} — arraste p/ mover · duplo-clique p/ marcar`;
+    d.title = `${tk.name} — drag to move · double-click to mark`;
     d.style.left = `${tk.x}%`;
     d.style.top = `${tk.y}%`;
     if (state.selected && state.selected.id === tk.id) d.classList.add("selected");
@@ -418,7 +418,7 @@ function renderTokens() {
     d.append(img);
     if (tk.grayscale) {
       const x = document.createElement("img");
-      x.className = "x-mark"; x.decoding = "async"; x.alt = "marcado";
+      x.className = "x-mark"; x.decoding = "async"; x.alt = "marked";
       if (typeof withImgFallback === "function") withImgFallback(x, X_MARK_SRC);
       x.src = X_MARK_SRC;
       x.draggable = false;
@@ -436,8 +436,8 @@ const screenDeltaToPct = () => {
   return { sx: r.width / 100, sy: r.height / 100 };
 };
 
-/* ---------- setas ligadas ao token: mover apaga a sequência ---------- */
-const ARROW_MATCH_TOL = 0.6; // % do mapa — encostou na posição antiga, sai
+/* ---------- token-linked arrows: moving clears the chain ---------- */
+const ARROW_MATCH_TOL = 0.6; // % of the map — touched the old position, removed
 const nearPt = (a, b) => Math.hypot(a.x - b.x, a.y - b.y) < ARROW_MATCH_TOL;
 function pruneArrowsAt(pt) {
   const doomed = [{ x: pt.x, y: pt.y }];
@@ -495,7 +495,7 @@ function startTokenDrag(e, id) {
   el.addEventListener("pointercancel", up);
 }
 
-/* ---------- clique no fundo p/ desselecionar ---------- */
+/* ---------- background click to deselect ---------- */
 viewport.addEventListener("click", (e) => {
   if (e.target === viewport || e.target === world || e.target.id === "basemap") {
     setSelected(null);
@@ -503,7 +503,7 @@ viewport.addEventListener("click", (e) => {
   }
 });
 
-/* ---------- modal champions (modo troca, time fixo pela posição) ---------- */
+/* ---------- champion modal (swap mode, fixed team by position) ---------- */
 const openSwapPicker = (id) => {
   pendingSwapId = id;
   $("#champ-modal").hidden = false;
@@ -547,7 +547,7 @@ function renderChampGrid(filter = "") {
     });
   if (!grid.children.length) {
     const p = document.createElement("p");
-    p.className = "muted"; p.textContent = "Nenhum champion encontrado.";
+    p.className = "muted"; p.textContent = "No champion found.";
     grid.append(p);
   }
 }
@@ -589,7 +589,7 @@ const exportBoard = () => {
 };
 
 const importBoardData = (data) => {
-  if (!data || typeof data !== "object") throw new Error("formato inválido");
+  if (!data || typeof data !== "object") throw new Error("invalid format");
   const rawTokens = Array.isArray(data.tokens) ? data.tokens : [];
   const validTeams = new Set(["blue", "red", "neutral"]);
   const tokens = [];
@@ -634,7 +634,7 @@ const importBoardData = (data) => {
     }));
   selectTool(null);
   state.tokens = capped;
-  // Etiquetas: formato novo {token: idx, text} ou legado {tokenId}
+  // Labels: new format {token: idx, text} or legacy {tokenId}
   const rawLabels = Array.isArray(data.labels) ? data.labels : [];
   state.labels = rawLabels
     .map((raw) => {
@@ -674,7 +674,7 @@ const importBoardFile = (file) => {
     try {
       importBoardData(JSON.parse(reader.result));
     } catch (err) {
-      alert("Arquivo inválido: não foi possível importar o quadro.");
+      alert("Invalid file: could not import the board.");
     }
   };
   reader.readAsText(file);
@@ -715,7 +715,7 @@ function wire() {
   window.addEventListener("resize", applyCam);
 }
 
-/* ---------- boot (sempre 10 via main.json) ---------- */
+/* ---------- boot (always 10 via main.json) ---------- */
 renderStructs();
 renderTokens();
 renderRoster();

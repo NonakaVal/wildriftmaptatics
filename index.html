@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Planejador tático Wild Rift — arraste champions, marque torres, desenhe setas." />
+  <meta name="description" content="Wild Rift tactical planner — drag champions, mark towers, draw arrows." />
   <title>Wild Rift Map Planner — Champions</title>
   <link rel="preload" as="image" href="resources/map-map-icons/mapcanvas.webp" fetchpriority="high" />
   <link rel="stylesheet" href="css/style.css" />
@@ -14,10 +14,10 @@
       <div class="world" id="world">
         <picture>
           <source srcset="resources/map-map-icons/mapcanvas.webp" type="image/webp" />
-          <img id="basemap" class="basemap" src="resources/map-map-icons/mapcanvas.jpg" alt="Mapa" draggable="false" fetchpriority="high" decoding="async" width="2048" height="1485" />
+          <img id="basemap" class="basemap" src="resources/map-map-icons/mapcanvas.jpg" alt="Map" draggable="false" fetchpriority="high" decoding="async" width="2048" height="1485" />
         </picture>
         <div id="layer-structs" class="layer"></div>
-        <svg id="layer-arrows" class="layer" viewBox="0 0 1000 725.0755" aria-label="Setas de movimentação">
+        <svg id="layer-arrows" class="layer" viewBox="0 0 1000 725.0755" aria-label="Movement arrows">
           <defs><marker id="arrow-tip" viewBox="0 0 16 14" refX="14" refY="7" markerWidth="5" markerHeight="4.375" orient="auto" overflow="visible"><path d="M 1 1 L 14 7 L 1 13 L 4 7 Z" fill="#e8cf87" stroke="#e8cf87" stroke-width="1.2" stroke-linejoin="round" /></marker><marker id="arrow-tip-blue" viewBox="0 0 16 14" refX="14" refY="7" markerWidth="5" markerHeight="4.375" orient="auto" overflow="visible"><path d="M 1 1 L 14 7 L 1 13 L 4 7 Z" fill="#2f9dff" stroke="#2f9dff" stroke-width="1.2" stroke-linejoin="round" /></marker><marker id="arrow-tip-red" viewBox="0 0 16 14" refX="14" refY="7" markerWidth="5" markerHeight="4.375" orient="auto" overflow="visible"><path d="M 1 1 L 14 7 L 1 13 L 4 7 Z" fill="#ff4d5e" stroke="#ff4d5e" stroke-width="1.2" stroke-linejoin="round" /></marker></defs>
           <g id="arrows"></g>
         </svg>
@@ -25,38 +25,38 @@
         <div id="layer-tokens" class="layer"></div>
         <div id="layer-labels" class="layer"></div>
       </div>
-      <div class="team-rail team-left" id="team-blue" role="group" aria-label="Time azul"></div>
-      <div class="team-rail team-right" id="team-red" role="group" aria-label="Time vermelho"></div>
-      <div class="dock-bar dock-left" role="group" aria-label="Zoom do mapa">
-        <button id="zoom-out" class="zoom-btn" title="Afastar (-)">−</button>
+      <div class="team-rail team-left" id="team-blue" role="group" aria-label="Blue team"></div>
+      <div class="team-rail team-right" id="team-red" role="group" aria-label="Red team"></div>
+      <div class="dock-bar dock-left" role="group" aria-label="Map zoom">
+        <button id="zoom-out" class="zoom-btn" title="Zoom out (-)">−</button>
         <span class="zoom-label" id="zoom-label">100%</span>
-        <button id="zoom-in" class="zoom-btn" title="Aproximar (+)">+</button>
-        <button id="zoom-reset" class="zoom-btn" title="Resetar visão (0)">⤾</button>
+        <button id="zoom-in" class="zoom-btn" title="Zoom in (+)">+</button>
+        <button id="zoom-reset" class="zoom-btn" title="Reset view (0)">⤾</button>
       </div>
-      <div class="dock-bar dock-center" id="map-zoom" role="group" aria-label="Ferramentas do mapa">
-        <button id="tool-arrow" class="btn tool-btn" aria-pressed="false" title="Comece em um personagem ou na ponta de uma seta" aria-describedby="tool-hint"><span aria-hidden="true">↗</span><span>Seta</span></button>
-        <button id="tool-ward" class="btn tool-btn" aria-pressed="false" title="Clique no mapa para colocar uma ward" aria-describedby="tool-hint"><img src="resources/champions/ward.webp" alt="" loading="lazy" decoding="async" /><span>Ward</span></button>
-        <button id="tool-text" class="btn tool-btn" aria-pressed="false" title="Clique num personagem para vincular um texto" aria-describedby="tool-hint"><span aria-hidden="true">T</span><span>Texto</span></button>
+      <div class="dock-bar dock-center" id="map-zoom" role="group" aria-label="Map tools">
+        <button id="tool-arrow" class="btn tool-btn" aria-pressed="false" title="Start on a character or at an arrow tip" aria-describedby="tool-hint"><span aria-hidden="true">↗</span><span>Arrow</span></button>
+        <button id="tool-ward" class="btn tool-btn" aria-pressed="false" title="Click the map to place a ward" aria-describedby="tool-hint"><img src="resources/champions/ward.webp" alt="" loading="lazy" decoding="async" /><span>Ward</span></button>
+        <button id="tool-text" class="btn tool-btn" aria-pressed="false" title="Click a character to attach a text" aria-describedby="tool-hint"><span aria-hidden="true">T</span><span>Text</span></button>
       </div>
-      <div class="dock-bar dock-right" role="group" aria-label="Opções do quadro">
-        <button id="btn-restart" class="btn tool-btn" title="Reiniciar quadro (main.json)"><span aria-hidden="true">↺</span><span>Restartar</span></button>
-        <button id="btn-export" class="btn tool-btn" title="Exportar quadro (JSON)"><span aria-hidden="true">⤓</span><span>Exportar</span></button>
-        <button id="btn-import" class="btn tool-btn" title="Importar quadro (JSON)"><span aria-hidden="true">⤒</span><span>Importar</span></button>
+      <div class="dock-bar dock-right" role="group" aria-label="Board options">
+        <button id="btn-restart" class="btn tool-btn" title="Reset board (main.json)"><span aria-hidden="true">↺</span><span>Restart</span></button>
+        <button id="btn-export" class="btn tool-btn" title="Export board (JSON)"><span aria-hidden="true">⤓</span><span>Export</span></button>
+        <button id="btn-import" class="btn tool-btn" title="Import board (JSON)"><span aria-hidden="true">⤒</span><span>Import</span></button>
         <input id="file-import" type="file" accept="application/json,.json" hidden />
       </div>
       <p id="tool-hint" class="tool-hint" aria-live="polite"></p>
     </section>
   </main>
 
-  <!-- Modal champions -->
+  <!-- Champion modal -->
   <div class="modal-backdrop" id="champ-modal" hidden>
-    <div class="modal" role="dialog" aria-modal="true" aria-label="Escolher champion">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Choose champion">
       <div class="modal-head">
-        <strong id="champ-modal-title">Trocar champion</strong>
-        <button class="btn small" id="champ-close">Fechar ✕</button>
+        <strong id="champ-modal-title">Change champion</strong>
+        <button class="btn small" id="champ-close">Close ✕</button>
       </div>
       <div class="modal-sub">
-        <input id="champ-search" type="search" placeholder="Buscar... ex: ahri, lee" autocomplete="off" />
+        <input id="champ-search" type="search" placeholder="Search... e.g.: ahri, lee" autocomplete="off" />
       </div>
       <div class="champ-grid" id="champ-grid"></div>
     </div>

@@ -1,5 +1,5 @@
-/* Dados estáticos — só champions (sem torres/objetivos) */
-/* Otimizado p/ GitHub Pages: WebP primário (JPG fallback só p/ basemap) */
+/* Static data — champions only (no towers/objectives) */
+/* Optimized for GitHub Pages: primary WebP (JPG fallback only for basemap) */
 const MAP_IMAGE = "resources/map-map-icons/mapcanvas.webp";
 const MAP_IMAGE_FALLBACK = "resources/map-map-icons/mapcanvas.jpg";
 
@@ -26,7 +26,7 @@ const championSrc = (slug) => `resources/champions/${slug}.webp`;
 const WARD_SRC = "resources/champions/ward.webp";
 const X_MARK_SRC = "resources/map-map-icons/x-mark.webp";
 
-/* Compat: boards antigos exportados com .png → remapeia p/ .webp */
+/* Compat: old boards exported with .png → remap to .webp */
 const migrateSrc = (src) => {
   if (typeof src !== "string") return src;
   return src
@@ -38,7 +38,7 @@ const migrateSrc = (src) => {
     .replace("map-map-icons/blue-nexus-icon.png", "map-map-icons/blue-nexus-icon.webp")
     .replace("map-map-icons/red-nexus-icon.png", "map-map-icons/red-nexus-icon.webp");
 };
-/* Fallback runtime: se .webp falhar (browser antigo), tenta o .png/.jpg legado */
+/* Runtime fallback: if .webp fails (old browser), try the legacy .png/.jpg */
 const withImgFallback = (img, webpSrc) => {
   img.onerror = () => {
     img.onerror = null;
@@ -52,9 +52,9 @@ const withImgFallback = (img, webpSrc) => {
   return img;
 };
 
-/* Estruturas fixas mapeadas do mapcanvas.png (template matching RGB) */
+/* Fixed structures mapped from mapcanvas.png (RGB template matching) */
 const STRUCTURES = [
-  // BLUE — base inferior-esquerda
+  // BLUE — bottom-left base
   { id: "BTOP-T1", team: "blue", label: "T1 BLUE TOP", x: 18.98, y: 31.22, kind: "tower" },
   { id: "BTOP-T2", team: "blue", label: "T2 BLUE TOP", x: 19.03, y: 52.60, kind: "tower" },
   { id: "BTOP-T3", team: "blue", label: "T3 BLUE TOP", x: 19.03, y: 64.97, kind: "tower" },
@@ -65,7 +65,7 @@ const STRUCTURES = [
   { id: "BBOT-T2", team: "blue", label: "T2 BLUE BOT", x: 48.37, y: 86, kind: "tower" },
   { id: "BBOT-T3", team: "blue", label: "T3 BLUE BOT", x: 34.72, y: 84.41, kind: "tower" },
   { id: "B-NX", team: "blue", label: "BLUE NEXUS", x: 21.10, y: 81.81, kind: "nexus" },
-  // RED — base superior-direita
+  // RED — top-right base
   { id: "RTOP-T1", team: "red", label: "T1 RED TOP", x: 35.20, y: 15, kind: "tower" },
   { id: "RTOP-T2", team: "red", label: "T2 RED TOP", x: 52.11, y: 16.88, kind: "tower" },
   { id: "RTOP-T3", team: "red", label: "T3 RED TOP", x: 64.15, y: 16.88, kind: "tower" },
@@ -76,9 +76,9 @@ const STRUCTURES = [
   { id: "RBOT-T2", team: "red", label: "T2 RED BOT", x: 79.50, y: 44.83, kind: "tower" },
   { id: "RBOT-T3", team: "red", label: "T3 RED BOT", x: 79.33, y: 33.89, kind: "tower" },
   { id: "R-NX", team: "red", label: "RED NEXUS", x: 77.22, y: 19.55, kind: "nexus" },
-  // Objetivos épicos do rio
-  { id: "BARON", team: "purple", label: "BARÃO", x: 38.0, y: 34.0, kind: "baron" },
-  { id: "DRAGON", team: "red", label: "DRAGÃO", x: 63.6, y: 66.6, kind: "dragon" },
+  // Epic river objectives
+  { id: "BARON", team: "purple", label: "BARON", x: 38.0, y: 34.0, kind: "baron" },
+  { id: "DRAGON", team: "red", label: "DRAGON", x: 63.6, y: 66.6, kind: "dragon" },
 ];
 
 const structIconFor = (s) => {
@@ -93,7 +93,7 @@ const structIconFor = (s) => {
     : "resources/map-map-icons/red-tower-icon.webp";
 };
 
-/* Quadro inicial (espelho do main.json) — fallback quando fetch falha (ex. file://) */
+/* Initial board (mirror of main.json) — fallback when fetch fails (e.g. file://) */
 const DEFAULT_BOARD = {
   version: 2,
   app: "wild-rift-map-planner",
